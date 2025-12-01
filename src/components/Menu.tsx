@@ -366,85 +366,86 @@ const Menu = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="max-w-2xl">
-          {selectedItem && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedItem.name}</DialogTitle>
-                <DialogDescription className="text-base mt-2">
-                  {selectedItem.description}
-                </DialogDescription>
-              </DialogHeader>
+<Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4">
+    {selectedItem && (
+      <>
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{selectedItem.name}</DialogTitle>
+          <DialogDescription className="text-base mt-2">
+            {selectedItem.description}
+          </DialogDescription>
+        </DialogHeader>
 
-              <div className="grid gap-4 mt-4">
-                <div className="relative h-64 rounded-lg overflow-hidden">
-                  <img
-                    src={selectedItem.image}
-                    alt={selectedItem.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+        <div className="grid gap-4 mt-4">
+          <div className="relative h-64 rounded-lg overflow-hidden">
+            <img
+              src={selectedItem.image}
+              alt={selectedItem.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                      <span className="text-primary">🥘</span> Ingredients
-                    </h4>
-                    <p className="text-muted-foreground">{selectedItem.ingredients}</p>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <span className="text-primary">🥘</span> Ingredients
+              </h4>
+              <p className="text-muted-foreground">{selectedItem.ingredients}</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <span className="text-primary">📊</span> Nutritional Information
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Badge variant="secondary" className="justify-center py-2">
+                  <div className="text-center">
+                    <div className="font-bold">{selectedItem.nutrition.calories}</div>
+                    <div className="text-xs">Calories</div>
                   </div>
-
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                      <span className="text-primary">📊</span> Nutritional Information
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.calories}</div>
-                          <div className="text-xs">Calories</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.protein}</div>
-                          <div className="text-xs">Protein</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.carbs}</div>
-                          <div className="text-xs">Carbs</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.fat}</div>
-                          <div className="text-xs">Fat</div>
-                        </div>
-                      </Badge>
-                    </div>
+                </Badge>
+                <Badge variant="secondary" className="justify-center py-2">
+                  <div className="text-center">
+                    <div className="font-bold">{selectedItem.nutrition.protein}</div>
+                    <div className="text-xs">Protein</div>
                   </div>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t">
-                  <div className="text-3xl font-black text-primary">₹{selectedItem.price}</div>
-                  <Button
-                    className="flex-1 bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow"
-                    onClick={() => {
-                      handleAddToCart(selectedItem);
-                      setSelectedItem(null);
-                    }}
-                  >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
-                  </Button>
-                </div>
+                </Badge>
+                <Badge variant="secondary" className="justify-center py-2">
+                  <div className="text-center">
+                    <div className="font-bold">{selectedItem.nutrition.carbs}</div>
+                    <div className="text-xs">Carbs</div>
+                  </div>
+                </Badge>
+                <Badge variant="secondary" className="justify-center py-2">
+                  <div className="text-center">
+                    <div className="font-bold">{selectedItem.nutrition.fat}</div>
+                    <div className="text-xs">Fat</div>
+                  </div>
+                </Badge>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <div className="text-3xl font-black text-primary">₹{selectedItem.price}</div>
+            <Button
+              className="flex-1 bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow"
+              onClick={() => {
+                handleAddToCart(selectedItem);
+                setSelectedItem(null);
+              }}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Add to Cart
+            </Button>
+          </div>
+        </div>
+      </>
+    )}
+  </DialogContent>
+</Dialog>
+
     </section>
   );
 };
