@@ -15,12 +15,18 @@ interface CartContextType {
   clearCart: () => void;
   total: number;
   itemCount: number;
+  notes: string;
+  setNotes: (notes: string) => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [notes, setNotes] = useState<string>("");
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addItem = (item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
@@ -50,6 +56,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setItems([]);
+    setNotes("");
   };
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -65,6 +72,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         total,
         itemCount,
+        notes,
+        setNotes,
+        isCartOpen,
+        setIsCartOpen,
       }}
     >
       {children}

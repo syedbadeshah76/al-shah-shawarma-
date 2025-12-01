@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, ChevronDown, ChevronUp, Eye, Leaf, Flame, Star } from "lucide-react";
+import { ShoppingCart, ChevronDown, ChevronUp, Eye, Leaf, Flame, Star, Search } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -23,6 +24,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import shawarmaMain from "@/assets/shawarma-main.jpg";
 import miniShawarma from "@/assets/mini-shawarma.jpg";
 import burger from "@/assets/burger.jpg";
@@ -217,7 +220,7 @@ const menuItems = [
   },
 ];
 
-const Menu = () => {
+const MenuPage = () => {
   const { addItem, setIsCartOpen } = useCart();
   const { toast } = useToast();
   const [showAll, setShowAll] = useState(false);
@@ -225,16 +228,20 @@ const Menu = () => {
   const [addedItemName, setAddedItemName] = useState("");
   const [selectedItem, setSelectedItem] = useState<typeof menuItems[0] | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredItems = menuItems.filter((item) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "vegetarian") return item.isVegetarian;
-    if (activeFilter === "spicy") return item.isSpicy;
-    if (activeFilter === "popular") return item.featured;
-    return true;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (activeFilter === "all") return matchesSearch;
+    if (activeFilter === "vegetarian") return matchesSearch && item.isVegetarian;
+    if (activeFilter === "spicy") return matchesSearch && item.isSpicy;
+    if (activeFilter === "popular") return matchesSearch && item.featured;
+    return matchesSearch;
   });
 
-  const visibleItems = showAll ? filteredItems : filteredItems.slice(0, 3);
+  const visibleItems = showAll ? filteredItems : filteredItems.slice(0, 12);
 
   const handleAddToCart = (item) => {
     addItem(item);
@@ -252,100 +259,145 @@ const Menu = () => {
   };
 
   return (
-    <section id="menu" className="py-20 bg-muted">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Our <span className="text-gradient">Delicious Menu</span>
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Freshly prepared with premium ingredients and authentic flavors
-          </p>
-        </div>
+    <div className="min-h-screen">
+      <Navbar />
+      
+      <section className="pt-32 pb-20 bg-muted">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Our <span className="text-gradient">Delicious Menu</span>
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Freshly prepared with premium ingredients and authentic flavors
+            </p>
+          </div>
 
-        {/* FILTER TABS */}
-        <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-8">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 backdrop-blur">
-            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              All Items
-            </TabsTrigger>
-            <TabsTrigger value="popular" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Star className="h-4 w-4 mr-1" />
-              Popular
-            </TabsTrigger>
-            <TabsTrigger value="vegetarian" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Leaf className="h-4 w-4 mr-1" />
-              Vegetarian
-            </TabsTrigger>
-            <TabsTrigger value="spicy" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Flame className="h-4 w-4 mr-1" />
-              Spicy
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          {/* SEARCH BAR */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+              <Input
+                type="text"
+                placeholder="Search for menu items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 text-base bg-background/50 backdrop-blur border-border/50"
+              />
+            </div>
+          </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {visibleItems.map((item, index) => (
-            <Card
-              key={index}
-              className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden ${
-                item.featured ? "ring-2 ring-primary shadow-glow" : ""
-              }`}
-            >
-              <div className="relative overflow-hidden h-48">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                {item.featured && (
-                  <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                    Popular
+          {/* FILTER TABS */}
+          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-8">
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 backdrop-blur">
+              <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                All Items
+              </TabsTrigger>
+              <TabsTrigger value="popular" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Star className="h-4 w-4 mr-1" />
+                Popular
+              </TabsTrigger>
+              <TabsTrigger value="vegetarian" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Leaf className="h-4 w-4 mr-1" />
+                Vegetarian
+              </TabsTrigger>
+              <TabsTrigger value="spicy" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Flame className="h-4 w-4 mr-1" />
+                Spicy
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Results count */}
+          {searchQuery && (
+            <p className="text-center text-muted-foreground mb-6">
+              Found {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} matching "{searchQuery}"
+            </p>
+          )}
+
+          {/* GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {visibleItems.map((item, index) => (
+              <Card
+                key={index}
+                className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden ${
+                  item.featured ? "ring-2 ring-primary shadow-glow" : ""
+                }`}
+              >
+                <div className="relative overflow-hidden h-48">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  {item.featured && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                      Popular
+                    </div>
+                  )}
+                  <div className="absolute top-2 left-2 flex gap-1">
+                    {item.isVegetarian && (
+                      <Badge variant="secondary" className="bg-green-500/90 text-white border-0">
+                        <Leaf className="h-3 w-3" />
+                      </Badge>
+                    )}
+                    {item.isSpicy && (
+                      <Badge variant="secondary" className="bg-red-500/90 text-white border-0">
+                        <Flame className="h-3 w-3" />
+                      </Badge>
+                    )}
                   </div>
-                )}
-              </div>
-
-              <CardContent className="p-4">
-                <h3 className="font-bold text-lg mb-2">{item.name}</h3>
-
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl font-black text-primary">
-                    ₹{item.price}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Quick View
-                  </Button>
                 </div>
 
-                <Button
-                  size="sm"
-                  className="w-full bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow"
-                  onClick={() => handleAddToCart(item)}
-                >
-                  <ShoppingCart className="mr-1 h-4 w-4" />
-                  Add to Cart
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-lg mb-2">{item.name}</h3>
 
-        {/* ARROW BUTTON */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/80 transition"
-          >
-            {showAll ? <ChevronUp size={28} /> : <ChevronDown size={28} />}
-          </button>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-2xl font-black text-primary">
+                      ₹{item.price}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedItem(item)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Quick View
+                    </Button>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    className="w-full bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow"
+                    onClick={() => handleAddToCart(item)}
+                  >
+                    <ShoppingCart className="mr-1 h-4 w-4" />
+                    Add to Cart
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredItems.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">No items found matching your search.</p>
+            </div>
+          )}
+
+          {/* SHOW MORE/LESS BUTTON */}
+          {filteredItems.length > 12 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/80 transition"
+              >
+                {showAll ? <ChevronUp size={28} /> : <ChevronDown size={28} />}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
@@ -445,9 +497,10 @@ const Menu = () => {
           )}
         </DialogContent>
       </Dialog>
-    </section>
+
+      <Footer />
+    </div>
   );
 };
 
-export default Menu;
-        
+export default MenuPage;
