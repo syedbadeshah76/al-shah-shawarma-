@@ -19,9 +19,9 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Menu", href: "/menu" },
-    { name: "Offers", href: "/#offers" },
-    { name: "Gallery", href: "/#gallery" },
-    { name: "Contact", href: "/#contact" },
+    { name: "Offers", href: "/offers" },
+    { name: "Gallery", href: "/gallery" },
+    { name: "Contact", href: "/contact" },
   ];
 
   return (
@@ -45,30 +45,20 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {navLinks.map((link) => (
-              link.href.startsWith("/#") ? (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
-                >
-                  {link.name}
-                </a>
-              ) : (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
-                >
-                  {link.name}
-                </Link>
-              )
+              <Link
+                key={link.name}
+                to={link.href}
+                className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
+              >
+                {link.name}
+              </Link>
             ))}
             <Cart />
             <Button 
               className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-glow"
               asChild
             >
-              <a href="tel:+919573362314">
+              <a href="tel:+919876543210">
                 <Phone className="mr-2 h-4 w-4" />
                 Order Now
               </a>
@@ -89,25 +79,14 @@ const Navbar = () => {
           <div className="md:hidden py-4 animate-slide-up">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                link.href.startsWith("/#") ? (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    className="text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.name}
-                  </a>
-                ) : (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    className="text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.name}
-                  </Link>
-                )
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
               ))}
               <div className="flex gap-2">
                 <div className="flex-1">

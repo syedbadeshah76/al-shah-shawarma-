@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { ShoppingCart, ChevronDown, ChevronUp, Eye, Leaf, Flame, Star, Search } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
@@ -229,16 +230,21 @@ const MenuPage = () => {
   const [selectedItem, setSelectedItem] = useState<typeof menuItems[0] | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [priceRange, setPriceRange] = useState<number[]>([0, 150]);
+
+  const minPrice = 0;
+  const maxPrice = 150;
 
   const filteredItems = menuItems.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPrice = item.price >= priceRange[0] && item.price <= priceRange[1];
     
-    if (activeFilter === "all") return matchesSearch;
-    if (activeFilter === "vegetarian") return matchesSearch && item.isVegetarian;
-    if (activeFilter === "spicy") return matchesSearch && item.isSpicy;
-    if (activeFilter === "popular") return matchesSearch && item.featured;
-    return matchesSearch;
+    if (activeFilter === "all") return matchesSearch && matchesPrice;
+    if (activeFilter === "vegetarian") return matchesSearch && matchesPrice && item.isVegetarian;
+    if (activeFilter === "spicy") return matchesSearch && matchesPrice && item.isSpicy;
+    if (activeFilter === "popular") return matchesSearch && matchesPrice && item.featured;
+    return matchesSearch && matchesPrice;
   });
 
   const visibleItems = showAll ? filteredItems : filteredItems.slice(0, 12);
@@ -288,7 +294,7 @@ const MenuPage = () => {
           </div>
 
           {/* FILTER TABS */}
-          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-8">
+          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-6">
             <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 backdrop-blur">
               <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 All Items
@@ -307,6 +313,30 @@ const MenuPage = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* PRICE RANGE FILTER */}
+          <div className="max-w-md mx-auto mb-8 p-4 bg-card/50 backdrop-blur rounded-lg border border-border/50">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-foreground">Price Range</span>
+              <span className="text-sm font-bold text-primary">
+                ₹{priceRange[0]} - ₹{priceRange[1]}{priceRange[1] >= maxPrice ? '+' : ''}
+              </span>
+            </div>
+            <Slider
+              value={priceRange}
+              onValueChange={setPriceRange}
+              min={minPrice}
+              max={maxPrice}
+              step={10}
+              className="w-full"
+            />
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+              <span>₹{minPrice}</span>
+              <span>₹50</span>
+              <span>₹100</span>
+              <span>₹{maxPrice}+</span>
+            </div>
+          </div>
 
           {/* Results count */}
           {searchQuery && (
@@ -419,81 +449,79 @@ const MenuPage = () => {
       </AlertDialog>
 
       <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-2xl mx-auto p-4 sm:p-6">
           {selectedItem && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedItem.name}</DialogTitle>
-                <DialogDescription className="text-base mt-2">
+            <div className="flex flex-col gap-4">
+              <DialogHeader className="pr-8">
+                <DialogTitle className="text-xl sm:text-2xl">{selectedItem.name}</DialogTitle>
+                <DialogDescription className="text-sm sm:text-base mt-2">
                   {selectedItem.description}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid gap-4 mt-4">
-                <div className="relative h-64 rounded-lg overflow-hidden">
-                  <img
-                    src={selectedItem.image}
-                    alt={selectedItem.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="relative h-40 sm:h-56 rounded-lg overflow-hidden flex-shrink-0">
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-semibold text-base sm:text-lg mb-1 flex items-center gap-2">
+                    <span className="text-primary">🥘</span> Ingredients
+                  </h4>
+                  <p className="text-muted-foreground text-xs sm:text-sm">{selectedItem.ingredients}</p>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                      <span className="text-primary">🥘</span> Ingredients
-                    </h4>
-                    <p className="text-muted-foreground">{selectedItem.ingredients}</p>
+                <div>
+                  <h4 className="font-semibold text-base sm:text-lg mb-2 flex items-center gap-2">
+                    <span className="text-primary">📊</span> Nutrition
+                  </h4>
+                  <div className="grid grid-cols-4 gap-1 sm:gap-2">
+                    <Badge variant="secondary" className="justify-center py-1.5 sm:py-2 px-1">
+                      <div className="text-center">
+                        <div className="font-bold text-xs sm:text-sm">{selectedItem.nutrition.calories}</div>
+                        <div className="text-[10px] sm:text-xs">Cal</div>
+                      </div>
+                    </Badge>
+                    <Badge variant="secondary" className="justify-center py-1.5 sm:py-2 px-1">
+                      <div className="text-center">
+                        <div className="font-bold text-xs sm:text-sm">{selectedItem.nutrition.protein}</div>
+                        <div className="text-[10px] sm:text-xs">Protein</div>
+                      </div>
+                    </Badge>
+                    <Badge variant="secondary" className="justify-center py-1.5 sm:py-2 px-1">
+                      <div className="text-center">
+                        <div className="font-bold text-xs sm:text-sm">{selectedItem.nutrition.carbs}</div>
+                        <div className="text-[10px] sm:text-xs">Carbs</div>
+                      </div>
+                    </Badge>
+                    <Badge variant="secondary" className="justify-center py-1.5 sm:py-2 px-1">
+                      <div className="text-center">
+                        <div className="font-bold text-xs sm:text-sm">{selectedItem.nutrition.fat}</div>
+                        <div className="text-[10px] sm:text-xs">Fat</div>
+                      </div>
+                    </Badge>
                   </div>
-
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                      <span className="text-primary">📊</span> Nutritional Information
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.calories}</div>
-                          <div className="text-xs">Calories</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.protein}</div>
-                          <div className="text-xs">Protein</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.carbs}</div>
-                          <div className="text-xs">Carbs</div>
-                        </div>
-                      </Badge>
-                      <Badge variant="secondary" className="justify-center py-2">
-                        <div className="text-center">
-                          <div className="font-bold">{selectedItem.nutrition.fat}</div>
-                          <div className="text-xs">Fat</div>
-                        </div>
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t">
-                  <div className="text-3xl font-black text-primary">₹{selectedItem.price}</div>
-                  <Button
-                    className="flex-1 bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow"
-                    onClick={() => {
-                      handleAddToCart(selectedItem);
-                      setSelectedItem(null);
-                    }}
-                  >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
-                  </Button>
                 </div>
               </div>
-            </>
+
+              <div className="flex items-center gap-3 pt-3 border-t mt-2">
+                <div className="text-xl sm:text-2xl font-black text-primary">₹{selectedItem.price}</div>
+                <Button
+                  className="flex-1 bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-glow-yellow h-10 sm:h-11"
+                  onClick={() => {
+                    handleAddToCart(selectedItem);
+                    setSelectedItem(null);
+                  }}
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
